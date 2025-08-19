@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log de Registro - Meu Catálogo de Animes</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--gradient-light, linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%));
+            transition: background 0.3s ease;
+        }
+
+        .log-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        /* Header roxo com ícone */
+        .log-header {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
+        }
+
+        .log-header .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .log-header i {
+            font-size: 2.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1rem;
+            border-radius: 50%;
+        }
+
+        .log-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .log-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin: 1rem 0 0 0;
+        }
+
+        /* Cards de estatísticas */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-primary, rgba(255, 255, 255, 0.1));
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.2));
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-primary, white);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-medium, 0 8px 32px rgba(0, 0, 0, 0.15));
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.05) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            background: var(--card-hover, rgba(255, 255, 255, 0.15));
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.9;
+            color: var(--accent-primary);
+        }
+
+        .stat-card .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+            color: var(--accent-primary);
+        }
+
+        .stat-card .stat-label {
+            font-size: 1.1rem;
+            color: var(--text-secondary, rgba(255, 255, 255, 0.8));
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        /* Seção de filtros */
+        .filters-section {
+            background: var(--bg-primary, #1e1e2e);
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.15));
+            border-radius: 24px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-heavy, 0 12px 40px rgba(0, 0, 0, 0.15));
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .filters-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        }
+
+        .filters-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary, white);
+        }
+
+        .filters-header i {
+            font-size: 1.2rem;
+            color: var(--accent-primary);
+        }
+
+        .filters-header h3 {
+            margin: 0;
+            color: var(--accent-primary);
+            font-size: 1.3rem;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: var(--bg-secondary, rgba(255, 255, 255, 0.1));
+            border: 1px solid var(--border-secondary, rgba(255, 255, 255, 0.2));
+            color: var(--text-primary, white);
+            padding: 0.875rem 1.75rem;
+            border-radius: 28px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.95rem;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .filter-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .filter-btn:hover {
+            background: var(--bg-tertiary, rgba(255, 255, 255, 0.2));
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-medium, 0 8px 25px rgba(0, 0, 0, 0.15));
+        }
+
+        .filter-btn:hover::before {
+            left: 100%;
+        }
+
+        .filter-btn.active {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            box-shadow: 0 4px 20px rgba(80, 12, 238, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Botão de limpar logs */
+        .clear-logs-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 0.875rem 1.75rem;
+            border-radius: 28px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.95rem;
+            margin-left: auto;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .clear-logs-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .clear-logs-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(255, 107, 107, 0.5);
+        }
+
+        .clear-logs-btn:hover::before {
+            left: 100%;
+        }
+
+        /* Histórico de atividades */
+        .activity-section {
+            background: var(--bg-primary, #1e1e2e);
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.15));
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-heavy, 0 12px 40px rgba(0, 0, 0, 0.15));
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .activity-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        }
+
+        .activity-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary, white);
+        }
+
+        .activity-header i {
+            font-size: 1.2rem;
+            color: var(--accent-primary);
+        }
+
+        .activity-header h3 {
+            margin: 0;
+            color: var(--accent-primary);
+            font-size: 1.3rem;
+        }
+
+        .activity-item {
+            background: var(--bg-secondary, rgba(255, 255, 255, 0.05));
+            border: 1px solid var(--border-secondary, rgba(255, 255, 255, 0.1));
+            border-radius: 16px;
+            padding: 1.75rem;
+            margin-bottom: 1.25rem;
+            color: var(--text-primary, white);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .activity-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .activity-item:hover {
+            background: var(--bg-tertiary, rgba(255, 255, 255, 0.15));
+            transform: translateX(8px) scale(1.02);
+            box-shadow: var(--shadow-medium, 0 8px 25px rgba(0, 0, 0, 0.1));
+        }
+
+        .activity-item:hover::before {
+            opacity: 1;
+        }
+
+        .activity-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .activity-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .activity-description {
+            color: var(--text-secondary, rgba(255, 255, 255, 0.8));
+            margin-bottom: 1rem;
+        }
+
+        .activity-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .status-info {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .status-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .status-error {
+            background: #ef4444;
+            color: white;
+        }
+
+        .activity-time {
+            color: var(--text-muted, rgba(255, 255, 255, 0.6));
+            font-size: 0.9rem;
+        }
+
+        /* Botão voltar */
+        .back-btn {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 1rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            font-size: 1.2rem;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .log-container {
+                padding: 1rem;
+            }
+
+            .log-header h1 {
+                font-size: 2rem;
+            }
+
+            .filter-buttons {
+                flex-direction: column;
+            }
+
+            .filter-btn {
+                text-align: center;
+            }
+
+            .clear-logs-btn {
+                margin-left: 0;
+                margin-top: 1rem;
+            }
+
+            .activity-meta {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="window.location.href='index.html'" title="Voltar ao catálogo">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+
+    <div class="log-container">
+        <!-- Header roxo com ícone -->
+        <div class="log-header">
+            <div class="header-content">
+                <i class="fas fa-clipboard-list"></i>
+                <h1>Log de Registro</h1>
+            </div>
+            <p>Histórico completo de todas as atividades do sistema</p>
+        </div>
+
+        <!-- Cards de estatísticas -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fas fa-list"></i>
+                <div class="stat-number" id="totalLogs">0</div>
+                <div class="stat-label">Total de Registros</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-info-circle"></i>
+                <div class="stat-number" id="infoLogs">0</div>
+                <div class="stat-label">Informações</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-check-circle"></i>
+                <div class="stat-number" id="successLogs">0</div>
+                <div class="stat-label">Sucessos</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div class="stat-number" id="warningLogs">0</div>
+                <div class="stat-label">Avisos</div>
+            </div>
+        </div>
+
+        <!-- Seção de filtros -->
+        <div class="filters-section">
+            <div class="filters-header">
+                <i class="fas fa-filter"></i>
+                <h3>Filtros</h3>
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">Todos</button>
+                <button class="filter-btn" data-filter="info">Informações</button>
+                <button class="filter-btn" data-filter="success">Sucessos</button>
+                <button class="filter-btn" data-filter="warning">Avisos</button>
+                <button class="filter-btn" data-filter="error">Erros</button>
+                <button class="clear-logs-btn" id="clearLogsBtn">
+                    <i class="fas fa-trash"></i> Limpar Logs
+                </button>
+            </div>
+        </div>
+
+        <!-- Histórico de atividades -->
+        <div class="activity-section">
+            <div class="activity-header">
+                <i class="fas fa-history"></i>
+                <h3>Histórico de Atividades</h3>
+            </div>
+            <div id="activityList">
+                <!-- Atividades serão inseridas aqui dinamicamente -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class LogManager {
+            constructor() {
+                this.logs = [];
+                this.filteredLogs = [];
+                this.currentFilter = 'all';
+                this.init();
+            }
+
+            init() {
+                this.loadLogs();
+                this.setupEventListeners();
+                this.updateStats();
+                this.renderActivities();
+            }
+
+            loadLogs() {
+                const savedLogs = localStorage.getItem('animeLogs');
+                this.logs = savedLogs ? JSON.parse(savedLogs) : [];
+                this.filteredLogs = [...this.logs];
+            }
+
+            setupEventListeners() {
+                // Filtros
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.currentFilter = e.target.dataset.filter;
+                        this.filterActivities();
+                    });
+                });
+
+                // Botão de limpar logs
+                document.getElementById('clearLogsBtn').addEventListener('click', () => this.clearLogs());
+            }
+
+            filterActivities() {
+                if (this.currentFilter === 'all') {
+                    this.filteredLogs = [...this.logs];
+                } else {
+                    this.filteredLogs = this.logs.filter(log => {
+                        const logType = this.getLogType(log.action);
+                        return logType === this.currentFilter;
+                    });
+                }
+                this.renderActivities();
+            }
+
+            getLogType(action) {
+                const typeMap = {
+                    'create': 'success',
+                    'edit': 'info',
+                    'delete': 'warning',
+                    'episode': 'success',
+                    'favorite': 'info',
+                    'hide': 'warning',
+                    'backup': 'success',
+                    'theme': 'info'
+                };
+                return typeMap[action] || 'info';
+            }
+
+            renderActivities() {
+                const activityList = document.getElementById('activityList');
+                
+                if (this.filteredLogs.length === 0) {
+                    activityList.innerHTML = `
+                        <div class="activity-item" style="text-align: center; opacity: 0.7;">
+                            <p>Nenhuma atividade encontrada</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                activityList.innerHTML = this.filteredLogs
+                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                    .map(log => this.createActivityItem(log))
+                    .join('');
+            }
+
+            createActivityItem(log) {
+                const logType = this.getLogType(log.action);
+                const statusText = this.getStatusText(logType);
+                const statusClass = `status-${logType}`;
+                const iconClass = this.getActionIcon(log.action);
+                const timeAgo = this.getTimeAgo(log.timestamp);
+
+                return `
+                    <div class="activity-item">
+                        <div class="activity-title">${this.getActionText(log.action)}</div>
+                        <div class="activity-description">${log.details}</div>
+                        <div class="activity-meta">
+                            <div class="status-badge ${statusClass}">
+                                <i class="${this.getStatusIcon(logType)}"></i>
+                                ${statusText}
+                            </div>
+                            <div class="activity-time">${timeAgo}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            getStatusText(type) {
+                const statusMap = {
+                    'success': 'SUCESSO',
+                    'info': 'INFORMAÇÃO',
+                    'warning': 'AVISO',
+                    'error': 'ERRO'
+                };
+                return statusMap[type] || 'INFO';
+            }
+
+            getStatusIcon(type) {
+                const iconMap = {
+                    'success': 'fas fa-check',
+                    'info': 'fas fa-info',
+                    'warning': 'fas fa-exclamation-triangle',
+                    'error': 'fas fa-times-circle'
+                };
+                return iconMap[type] || 'fas fa-info';
+            }
+
+            getActionIcon(action) {
+                const icons = {
+                    'create': 'fas fa-plus',
+                    'edit': 'fas fa-edit',
+                    'delete': 'fas fa-trash',
+                    'episode': 'fas fa-play',
+                    'favorite': 'fas fa-heart',
+                    'hide': 'fas fa-eye-slash',
+                    'backup': 'fas fa-download',
+                    'theme': 'fas fa-palette'
+                };
+                return icons[action] || 'fas fa-info-circle';
+            }
+
+            getActionText(action) {
+                const texts = {
+                    'create': 'Anime Criado',
+                    'edit': 'Anime Editado',
+                    'delete': 'Anime Excluído',
+                    'episode': 'Episódio Marcado',
+                    'favorite': 'Favorito Alterado',
+                    'hide': 'Visibilidade Alterada',
+                    'backup': 'Exportação JSON',
+                    'theme': 'Tema Alterado'
+                };
+                return texts[action] || 'Ação Realizada';
+            }
+
+            getTimeAgo(timestamp) {
+                const now = new Date();
+                const logTime = new Date(timestamp);
+                const diffInSeconds = Math.floor((now - logTime) / 1000);
+
+                if (diffInSeconds < 60) return 'Agora mesmo';
+                if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m atrás`;
+                if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h atrás`;
+                if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d atrás`;
+                
+                return logTime.toLocaleDateString('pt-BR');
+            }
+
+            updateStats() {
+                document.getElementById('totalLogs').textContent = this.logs.length;
+                document.getElementById('infoLogs').textContent = this.logs.filter(l => this.getLogType(l.action) === 'info').length;
+                document.getElementById('successLogs').textContent = this.logs.filter(l => this.getLogType(l.action) === 'success').length;
+                document.getElementById('warningLogs').textContent = this.logs.filter(l => this.getLogType(l.action) === 'warning').length;
+            }
+
+            clearLogs() {
+                if (confirm('Tem certeza que deseja limpar todos os logs? Esta ação não pode ser desfeita.')) {
+                    localStorage.removeItem('animeLogs');
+                    this.logs = [];
+                    this.filteredLogs = [];
+                    this.renderActivities();
+                    this.updateStats();
+                }
+            }
+        }
+
+        // Inicializar o gerenciador de logs
+        const logManager = new LogManager();
+
+        // Aplicar tema atual
+        function applyTheme() {
+            const currentTheme = localStorage.getItem('currentTheme') || 'dark';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+        }
+
+        // Aplicar tema ao carregar a página
+        applyTheme();
+
+        // Escutar mudanças de tema
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'currentTheme') {
+                applyTheme();
+            }
+        });
+
+        // Escutar eventos customizados de tema
+        window.addEventListener('themeChanged', (e) => {
+            localStorage.setItem('currentTheme', e.detail.theme);
+            applyTheme();
+        });
+    </script>
+</body>
+</html>
